@@ -42,14 +42,25 @@ for lang,cm in [('mysql','Add SQL (MySQL) solutions'),('pythondata','Add Pandas 
             if l==lang:
                 open(p['dir']+'/'+LANG[l][1],'w').write(code.rstrip()+'\n'); n+=1
     run('git','add','-A'); run('git','commit','-qm',f'{cm} ({n} files)')
-# index
+# index: two tables, sorted by difficulty (Easy, Medium, Hard) then id
+ORDER={'Easy':0,'Medium':1,'Hard':2}
 rows=[];cnt={}
 for slug,p in sorted(probs.items(),key=lambda kv:kv[1]['num']):
     q=p['q']; langs=', '.join(sorted({LANG[l][0] for l,_,_ in p['sols']}))
     last=max([ts for _,_,ts in p['sols']]); date=datetime.datetime.utcfromtimestamp(last).strftime('%Y-%m-%d')
     cnt[q['difficulty']]=cnt.get(q['difficulty'],0)+1
-    rows.append(f"| {p['num']} | [{q['title'].strip()}]({p['dir']}/README.md) | {q['difficulty']} | {langs} | {date} |")
+    rows.append((p['num'],f"[{q['title'].strip()}]({p['dir']}/README.md)",q['difficulty'],langs,date))
+def table(keep):
+    sel=sorted((r for r in rows if keep(r[3])),key=lambda r:(ORDER[r[2]],r[0]))
+    out=["| # | Problem | Difficulty | Languages | Last accepted |","|---|---|---|---|---|"]
+    out+=[f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} |" for r in sel]
+    return sel,out
+sp,sp_t=table(lambda l:'SQL' in l or 'Pandas' in l)
+py,py_t=table(lambda l:'Python3' in l)
 r="# leetcode-solutions\n\nPersonal LeetCode study notes: my accepted solutions (SQL, Pandas, Python3) with the problem statements and examples.\n\n> Problem statements and examples belong to LeetCode (https://leetcode.com). This repository is private and kept for personal study only.\n\n"
-r+=f"**{len(rows)} problems** ("+', '.join(f'{k}: {v}' for k,v in cnt.items())+"). Profile: https://leetcode.com/u/FD30/\n\nEach problem has a folder `problems/NNNN-slug/` with `README.md` (statement) and the solution file(s): `solution.sql` (MySQL), `solution_pandas.py` (Pandas), `solution.py` (Python3). The solution is the latest accepted submission per language. Date = last accepted submission (UTC).\n\n## Index\n\n| # | Problem | Difficulty | Languages | Last accepted |\n|---|---|---|---|---|\n"+'\n'.join(rows)+'\n'
+r+=f"**{len(rows)} problems** ("+', '.join(f'{k}: {v}' for k,v in cnt.items())+"). Profile: https://leetcode.com/u/FD30/\n\nEach problem has a folder `problems/NNNN-slug/` with `README.md` (statement) and the solution file(s): `solution.sql` (MySQL), `solution_pandas.py` (Pandas), `solution.py` (Python3). The solution is the latest accepted submission per language. Date = last accepted submission (UTC).\n\n"
+r+="## Index\n\n"
+r+=f"### SQL / Pandas ({len(sp)})\n\nSorted by difficulty, then id.\n\n"+'\n'.join(sp_t)+"\n\n"
+r+=f"### Python3 ({len(py)})\n\nSorted by difficulty, then id.\n\n"+'\n'.join(py_t)+"\n"
 open('README.md','w').write(r)
-run('git','add','-A'); run('git','commit','-qm','Add README index (problem, difficulty, language, date)')
+run('git','add','-A'); run('git','commit','-qm','Add README index (SQL/Pandas and Python3 tables, by difficulty then id)')
