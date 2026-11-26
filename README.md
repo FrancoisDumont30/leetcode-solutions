@@ -10,6 +10,8 @@ Each problem has a folder `problems/NNNN-slug/` with `README.md` (statement) and
 
 ## Index
 
+Sorted indexes: [SQL / Pandas](INDEX_SQL_PANDAS.md) and [Python3](INDEX_PYTHON3.md) (by difficulty, then id; regenerate with `python3 make_indexes.py`). Full list by id below.
+
 | # | Problem | Difficulty | Languages | Last accepted |
 |---|---|---|---|---|
 | 1 | [Two Sum](problems/0001-two-sum/README.md) | Easy | Python3 | 2026-06-10 |
